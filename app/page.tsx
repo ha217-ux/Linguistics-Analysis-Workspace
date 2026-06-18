@@ -2,20 +2,30 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useWorkspace } from "@/lib/store"
+import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useWorkspace()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim()) return
-    login(email.trim())
+    setLoading(true)
+    setError("")
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      setError("Invalid email or password.")
+      setLoading(false)
+      return
+    }
+
     router.push("/dashboard")
   }
 
@@ -34,16 +44,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-xl border border-border bg-card p-6"
-        >
+        <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-6">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="email"
-                className="text-xs font-medium text-muted-foreground"
-              >
+              <label htmlFor="email" className="text-xs font-medium text-muted-foreground">
                 Email
               </label>
               <input
@@ -58,10 +62,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="password"
-                className="text-xs font-medium text-muted-foreground"
-              >
+              <label htmlFor="password" className="text-xs font-medium text-muted-foreground">
                 Password
               </label>
               <input
@@ -75,14 +76,16 @@ export default function LoginPage() {
               />
             </div>
 
-            <Button type="submit" className="mt-2 w-full">
-              Sign in
+            {error && <p className="text-xs text-red-500">{error}</p>}
+
+            <Button type="submit" className="mt-2 w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </div>
         </form>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Prototype workspace — any email will sign you in.
+          Linguistic Analysis Workspace
         </p>
       </div>
     </main>
