@@ -42,3 +42,8 @@ CREATE TABLE observations (
   note TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
+ 
+## Live URL
+ 
+https://linguistics-analysis-workspace.vercel.app
